@@ -1,0 +1,80 @@
+#!/home/jpdl/miniconda2/envs/ircs_pol/bin/python
+
+from glob import glob
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
+from tqdm import tqdm
+
+from ircs import utils
+#import utils
+#from utils import inspect_data
+
+#initialize
+print('-----------------------')
+print('Checking raw data frames')
+print('-----------------------\n')
+
+file_list, obj, pol, unpol, on, off = utils.inspect_data()
+
+#show raw images: one polarized and one unpolarized
+#utils.test_image(pol, unpol, on, off)
+
+print('-----------------------')
+print('Cropping raw data')
+print('-----------------------\n')
+centroid_left = (620,720) #o-ray
+centroid_right = (900,720) #e-ray
+box_size = 150
+
+image = pf.open(pol[0])[0].data
+o = utils.get_crop(image, centroid_left, box_size)
+e = utils.get_crop(image, centroid_right, box_size)
+
+#mean, median, std = sigma_clipped_stats(test_image, sigma=3.0, iters=5)
+vmin,vmax= np.median(o), 10*np.median(o)
+
+'''fig, axs = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
+axs[0].imshow(o-np.median(o), vmin=vmin, vmax=vmax)
+axs[0].set_title('vertically polarized')
+axs[1].imshow(e-np.median(e), vmin=vmin, vmax=vmax)
+axs[1].set_title('horizontally polarized')
+fig.suptitle(pf.open(pol[0])[0].header['OBJECT'])
+fig.subplots_adjust(top=1.4)
+plt.show()'''
+
+#check psf
+#fwhm,constant=40,3000
+print('Checking psf...\n')
+mean_psf, centers = utils.check_psf(pol,centroid_left,skip_every=5)
+#print(mean_psf,centers)
+print('Plotting psf...\n')
+popt, pcov= utils.fit_psf(pol,mean_psf, centers)
+
+print('-----------------------')
+print('  Stacking ')
+print('-----------------------\n')
+
+
+
+print('-----------------------')
+print('         DONE')
+print('-----------------------\n')
+
+'''## Data Reduction Pipeline
+* inspecting raw data
+* making dark frame
+* making cal-flat frame
+* masking bad pixels
+* making sky-flat frame
+* subtracting flat-field
+* subtracting sky frame
+* interpolating for bad pixel
+* measuring position offset
+* shifting and combining images (image registration)
+* analyzing standard star
+* estimating limiting magnitude'''

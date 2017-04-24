@@ -1,0 +1,43 @@
+Metadata-Version: 1.1
+Name: ircs-pol
+Version: 0.1.1
+Summary: A simple data reduction pipeline for Subaru IRCS linear polarimetry data.
+Home-page: https://github.com/jpdeleon/ircs_pol
+Author: Jerome de Leon
+Author-email: jpdeleon.bsap@gmail.com
+License: ['GNU GPLv3']
+Description: # MOSCATEL
+        Rough description:
+        Command-line implementation of basic MuSCAT photometry pipeline and transit lightcurve analysis
+        
+        ## Progress
+        2017/03/21: basic analysis during Okayama observation
+        2017/04/09: basic high-level scripting
+        2017/04/20: created setup.py
+        
+        ## Sample run
+        ### Part 1 Photometry
+        
+        * e.g. $ python moscatel-phot --band_idx=2 --skip_every=5
+        
+        ### Part 2 Lightcurve analysis
+        * e.g. $ python moscatel-analysis --target=b --ref=a star=0
+        
+        See also other plotting helper functions in /moscatel/utils.py.
+        
+        TO DO: 
+        1. define input/output directories, centroids (tuples), etc in config.yaml
+        2. implement low-level control: e.g. radius of aperture, annuli etc.
+        3. incorporate advanced analysis e.g. mcmc and GP modeling
+        4. upgrade to classes
+        
+        
+        ---------
+        
+        
+Keywords: IRCS,linear polarimetry,near-infrared
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Programming Language :: Python
