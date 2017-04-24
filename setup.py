@@ -35,7 +35,7 @@ setup(
     version="0.1.1",
     author='Jerome de Leon',
     author_email = 'jpdeleon.bsap@gmail.com',
-    url = 'https://github.com/jpdeleon/ircs_pol',
+    url = 'https://github.com/jpdeleon/ircs',
     license = ['GNU GPLv3'],
     description ='A simple data reduction pipeline for Subaru IRCS linear polarimetry data.',
     long_description=rd("README.md") + "\n\n"
