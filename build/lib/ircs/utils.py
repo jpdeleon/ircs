@@ -15,67 +15,75 @@ from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
 
-input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-output_dir = '/home/jpdl/ircs_pol_output'
+#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+output_dir = '/home/Jerome/ircs_pol_output'
 
+ircs_pix_size = 20.57*1e-3
+strip_width = 4.4
+separation = strip_width/ircs_pix_size
 ## Data Reduction Pipeline
+
+
+
 def check_header(fname):
+    '''
+    similar to: from astropy.io.fits import getheader
+    '''
     sample_hdr = pf.open(input_dir+'/'+fname)[0].header
     print(sample_hdr)
     return sample_hdr
 
-def inspect_data():
-    obj=[]
-    pol = [] #Cyg, polarized
-    unpol = [] #BD32, unpol
-    off = []
-    on = []
-
+def image_sorter(input_dir, save_list):
     file_list = glob(os.path.join(input_dir,'*.fits'))
     file_list.sort()
+
     if os.listdir(input_dir) != []:
         print('total no. of raw data frames: {0}\n'.format(len(file_list)))
     obj=[]
+    obj_type=[]
+    flat=[]
+    flat_type=[]
+    flat_off=[]
+    flat_on=[]
+    others=[]
+
     for i in tqdm(file_list):
         hdr=pf.open(i)[0].header
-        obj.append(hdr['OBJECT'])
-
-        #classify objects
-        if hdr['OBJECT'] == 'BD+32 3739':
-            unpol.append(i)
-        elif hdr['OBJECT'] == 'Cyg OB2 No.3':
-            pol.append(i)
-        elif hdr['OBJECT'].split()[0].split('_')[2] == 'OFF':
-            #'IMAGE_Kp_OFF HWP0'
-            #'IMAGE_Kp_OFF HWP22.5'
-            #'IMAGE_Kp_OFF HWP45'
-            #'IMAGE_Kp_OFF HWP67.5'
-            off.append(i)
-
+        if hdr['DATA-TYP'] ==  'OBJECT':
+            obj.append(i)
+            obj_type.append(hdr['OBJECT'])
+        elif hdr['DATA-TYP'] ==  'FLAT':
+            flat.append(i)
+            flat_type.append(hdr['OBJECT'])
+            if hdr['OBJECT'].split()[0].split('_')[2] == 'OFF':
+                #'IMAGE_Kp_OFF HWP0'
+                #'IMAGE_Kp_OFF HWP22.5'
+                #'IMAGE_Kp_OFF HWP45'
+                #'IMAGE_Kp_OFF HWP67.5'
+                flat_off.append(i)
+            else:
+                flat_on.append(i)
         else:
-            #'IMAGE_Kp_ON HWP0',
-            #'IMAGE_Kp_ON HWP22.5',
-            #'IMAGE_Kp_ON HWP45',
-            #'IMAGE_Kp_ON HWP67.5
-            on.append(i)
-    print('Objects based on header:\n')
-    obj=set(obj)
-    print(['{}'.format(i) for i in obj])
-    print('\nNumber of frames per category:')
-    #how to differentiate which is polarized and which is not?
+            others.append(i)
+    print('\nTypes of object:\n{}\n'.format(set(obj_type)))
+    print('Types of flat:\n{}\n'.format(set(flat_type)))
+    #save into text file
+    if save_list == True:
+        np.savetxt(input_dir+'/object.txt', obj, fmt="%s", delimiter=',')
+        np.savetxt(input_dir+'/flat_off.txt', flat_off, fmt="%s", delimiter=',')
+        np.savetxt(input_dir+'/flat_on.txt', flat_on, fmt="%s", delimiter=',')
+        np.savetxt(input_dir+'/others.txt', others, fmt="%s", delimiter=',')
+        print('OBJECT and FLAT list saved in {}'.format(input_dir))
+    return obj, flat_on, flat_off, others
 
-    print('polarized?={0} \nunpolarized standard={1}\non={2}\noff={3}'.
-      format(len(pol),len(unpol),len(on),len(off)))
-    return file_list, obj, pol, unpol, on, off
 
 def test_image(pol, unpol, on, off):
-    #Cyg
-    #Cyg
+
     pol_image = pf.open(pol[0])[0].data
     unpol_image = pf.open(unpol[0])[0].data
 
-    on_image = pf.open(on[0])[0].data
-    off_image = pf.open(off[0])[0].data
+    # on_image = pf.open(on[0])[0].data
+    # off_image = pf.open(off[0])[0].data
 
     vmin1, vmax1 = np.median(pol_image), 10*np.median(pol_image)
     vmin2, vmax2 = np.median(unpol_image), 10*np.median(unpol_image)
@@ -96,6 +104,70 @@ def test_image(pol, unpol, on, off):
     #plt.imshow(pol_image)
     plt.show()
 
+def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
+    box_size = 150
+    if cmap is None:
+        cmap=None
+
+    elif cmap == 'gray':
+        cmap='gray'
+
+    else: #if None
+        cmap='jet'
+    pol_name = header_o['OBJECT']
+    unpol_name = header_e['OBJECT']
+
+    print('\nShowing {0} and {1}...\n'.format(pol_name,unpol_name))
+    dither_step=header_o['I_DTHSZ']
+    print('dither step={0} = {1} pix\n'.format(dither_step, dither_step/ircs_pix_size))
+    # turn on interactive mode, non-blocking `show`
+    plt.ion()
+    #import pdb; pdb.set_trace()
+    vmin1, vmax1 = None, None#np.median(pol_image), 10*np.median(pol_image)
+    vmin2, vmax2 = None, None#np.median(unpol_image), 10*np.median(unpol_image)
+
+    fig,ax = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
+    ax1 = ax[0].imshow(pol_image,cmap=cmap,vmin=vmin1,vmax=vmax1)
+    #ax[0].set_title(header_o['OBJECT'])
+    ax[0].set_title('vertically polarized')
+    peak_flux_o = get_peak_flux(pol_image, header_o, box_size, r=3)
+    ax[0].set_xlabel('peak flux/NDR/coadd\n={}'.format(peak_flux_o))
+    fig.colorbar(ax1, ax=ax[0])
+
+    ax2 = ax[1].imshow(unpol_image,cmap=cmap,vmin=vmin2,vmax=vmax2)
+    #ax[1].set_title(header_e['OBJECT'])
+    ax[1].set_title('horizontally polarized')
+    peak_flux_e = get_peak_flux(unpol_image, header_e, box_size, r=3)
+    ax[1].set_xlabel('peak flux/NDR/coadd\n={}'.format(peak_flux_e))
+    fig.colorbar(ax2, ax=ax[1])
+    plt.suptitle('{0}, {1}'.format(header_o['OBJECT'], header_e['FRAMEID']))
+    plt.show()
+    print('Dither number, waveplate position = {}\n'.format(header_e['I_DTHPOS']))
+    '''
+    bug: input works but EOF error!
+    raw_input works but might not work for python 3!
+    '''
+    try:
+        _ = input("Press [enter] to continue...")
+    except:
+        _ = raw_input("Press [enter] to continue...")
+    plt.close()
+
+def get_peak_flux(image, header, box_size, r):
+    a, b = image.shape
+    n = box_size
+    y,x = np.ogrid[-a/2.0:n-a/2.0, -b/2.0:n-b/2.0]
+    mask = x*x + y*y <= r*r
+    #square mask
+    # x_min, x_max = 140, 160 #width of 20 pix
+    # y_min, y_max= 140, 160
+    # slice_mask = (x > x_min) * (x < x_max) * (y > y_min) * (y < y_max)
+    # data_slice = data[y_min:y_max, x_min:x_max]
+    center_mask = image[mask]
+    peak_flux = np.median(center_mask) #star flux
+    peak_flux_adjusted = peak_flux/header['NDR']/header['COADD']
+    return peak_flux_adjusted
+
 def get_crop(image, centroid, box_size):
     x, y = centroid
     image_crop = np.copy(image[int(y-(box_size/2)):int(y+(box_size/2)),int(x-(box_size/2)):int(x+(box_size/2))])
@@ -111,12 +183,37 @@ def get_sources(image, fwhm, constant):
     df = sources.to_pandas()
     return df
 
-def check_psf(pol,centroid_left,skip_every,box_size=150,constant=1000,fwhm=20):
+def check_psf(image,constant=1000,fwhm=20):
+    centers=[]
+    fig,ax=plt.subplots(1,1)
+
+    df=get_sources(strip, fwhm, constant)
+    new_centroid=df.sort_values(by='flux',ascending=False).head(1)[['xcentroid','ycentroid']].values.flatten()
+    #print(new_centroid)
+
+    swath = np.arange(int(new_centroid[0])-15,int(new_centroid[0])+15,1)
+    psf_swath = []
+    for j in swath:
+        line=img_crop[j]/np.max(img_crop[j])
+        psf_swath.append(line)
+
+    mean_psf_swath = np.mean(psf_swath,axis=0)
+    ax.plot(mean_psf_swath, 'o',label=idx)
+    centers.append(new_centroid)
+
+    #mean_psf= np.mean(mean_psf_swath,axis=0)
+    ax.plot(mean_psf_swath, 'k-',label='mean')
+    ax.set_title('PSF of {}'.format(pf.open(pol[0])[0].header['OBJECT']))
+    plt.legend()
+    plt.show()
+    return mean_psf_swath, centers
+
+def check_psf_old(pol,centroid_left,skip_every,box_size=150,constant=1000,fwhm=20):
     centers=[]
     fig,ax=plt.subplots(1,1)
     for idx,i in tqdm(enumerate(pol[::skip_every])):
         #print(pf.open(i)[0].header['OBJECT'])
-        img=pf.open(i)[0].data
+        img=np.copy(pf.open(i)[0].data)
         strip = np.copy(img[:,int(centroid_left[0]-(box_size/2)):int(centroid_left[0]+(box_size/2))])
         df=get_sources(strip, fwhm, constant)
         new_centroid=df.sort_values(by='flux',ascending=False).head(1)[['xcentroid','ycentroid']].values.flatten()
@@ -172,6 +269,9 @@ def get_centroid(image):
     '''
     centroid = com(image)
     return centroid
+
+def get_median():
+    return
 
 def make_dark():
     return

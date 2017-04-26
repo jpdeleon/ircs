@@ -1,0 +1,85 @@
+#!/usr/bin/env python
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
+import argparse
+from ircs import utils
+from matplotlib import pyplot as plt
+import numpy as np
+
+input_dir = '/mnt/sda1/data/ircs_pol'
+ircs_pix_size = 20.57*1e-3
+
+parser = argparse.ArgumentParser(description=
+	"Show raw images", usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('--skip_every', help='skip every n-th frame per band', type=int, default=None)
+parser.add_argument('--cmap', help='choose colormap', type=str, choices=('jet','gray'), default=None)
+args = parser.parse_args()
+skip_every = args.skip_every
+cmap=args.cmap
+
+#initialize
+print('-----------------------')
+print('Checking raw data frames')
+print('-----------------------\n')
+
+file_list, obj, pol, unpol, on, off = utils.inspect_data(input_dir)
+
+
+if skip_every is not None:
+    print('Note:\nDither number is {} (recommended value for `skip_every`).\n'.format(pf.open(pol[0])[0].header['I_DTHNUM']))
+    print('\nSkipping every {}-th raw frame\n'.format(skip_every))
+
+else: #if None
+    skip_every=1
+    print('\nShowing all raw frames...\n')
+
+
+if cmap is None:
+    cmap=None
+
+elif cmap == 'gray':
+    cmap='gray'
+
+else: #if None
+    cmap='jet'
+
+pol_name = pf.open(pol[0])[0].header['OBJECT']
+unpol_name = pf.open(unpol[0])[0].header['OBJECT']
+
+print('\nShowing {0} and {1}...\n'.format(pol_name,unpol_name))
+
+# turn on interactive mode, non-blocking `show`
+dither_step=pf.open(unpol[0])[0].header['I_DTHSZ']
+print('dither step={0} = {1} pix\n'.format(dither_step, dither_step/ircs_pix_size))
+
+plt.ion()
+for idx,(i,j) in enumerate(zip(pol,unpol)[::skip_every]):
+    #plt.clf()
+    #utils.test_image(pol, unpol, on, off)
+    pol_image = pf.open(pol[idx])[0].data
+    unpol_image = pf.open(unpol[idx])[0].data
+    vmin1, vmax1 = np.median(pol_image), 10*np.median(pol_image)
+    vmin2, vmax2 = np.median(unpol_image), 10*np.median(unpol_image)
+
+    fig,ax = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
+    ax1 = ax[0].imshow(pol_image,cmap=cmap,vmin=vmin1,vmax=vmax1)
+    ax[0].set_title(pf.open(pol[idx])[0].header['OBJECT'])
+    ax[0].set_xlabel(pol[idx].split("/")[-1])
+    fig.colorbar(ax1, ax=ax[0])
+
+    ax2 = ax[1].imshow(unpol_image,cmap=cmap,vmin=vmin2,vmax=vmax2)
+    ax[1].set_title(pf.open(unpol[idx])[0].header['OBJECT'])
+    ax[1].set_xlabel(unpol[idx].split("/")[-1])
+    #plt.suptitle('n out of n'.format(len(n)))
+    fig.colorbar(ax2, ax=ax[1])
+    plt.show()
+    print(pf.open(unpol[idx])[0].header['I_DTHPOS'])
+    _ = raw_input("Press [enter] to continue...")
+    plt.close()
+
+print('\n-----------------------')
+print('         DONE')
+print('-----------------------\n')

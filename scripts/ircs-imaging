@@ -2,6 +2,7 @@
 
 from glob import glob
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 try:
@@ -9,72 +10,125 @@ try:
 except:
     import pyfits as pf
 from tqdm import tqdm
+import argparse
 
 from ircs import utils
+from ircs import crop
+from ircs import remove_bg
+
 #import utils
 #from utils import inspect_data
+
+input_dir = '/mnt/sda1/data/ircs_pol'
+output_dir = '/home/Jerome/ircs_pol_output'
+
+parser = argparse.ArgumentParser(description=
+	"Basic IRCS Data Reduction Pipeline:\n* inspecting raw data\n* making dark frame\n* making cal-flat frame\n* masking bad pixels\n* making sky-flat frame\n* subtracting flat-field\n* subtracting sky frame\n* interpolating for bad pixel\n* measuring position offset\n* shifting and combining images (image registration)\n* analyzing standard star\n* estimating limiting magnitude", usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('--box_size', help='size of crop box (in pixels) centered on point source; default=100 pix', type=int, default=None)
+parser.add_argument('--skip_every', help='skip every nth frame per band e.g. 5', type=int, default=None)
+parser.add_argument('--show_psf',help='show psf of OBJECT?', type=bool, default=False)
+#parser.add_argument('--centroids', help'', type=int)
+args = parser.parse_args()
+
+skip_every = args.skip_every
+box_size = args.box_size
+show_psf = args.show_psf
+
+#mas per pix
+ircs_pix_size = 20.57*1e-3
+
+if box_size is not None:
+    print('\nUsing `box_size` ={}'.format(box_size))
+
+else: #if None
+    box_size=200
+    print('Using default `box_size` ={}'.format(box_size))
 
 #initialize
 print('-----------------------')
 print('Checking raw data frames')
 print('-----------------------\n')
 
-file_list, obj, pol, unpol, on, off = utils.inspect_data()
+#if textfiles exists: read: on, off, obj = read_files()
+if os.listdir(input_dir) != []:
+    try:
+        obj=np.loadtxt(input_dir+'/object.txt', dtype=str, delimiter=',')
+        flat_off=np.loadtxt(input_dir+'/flat_off.txt', dtype=str, delimiter=',')
+        flat_on=np.loadtxt(input_dir+'/flat_on.txt', dtype=str, delimiter=',')
+        others=np.loadtxt(input_dir+'/others.txt', dtype=str, delimiter=',')
+        # import pdb; pdb.set_trace()
+    except:
+        print('Missing text files!\n')
 
-#show raw images: one polarized and one unpolarized
-#utils.test_image(pol, unpol, on, off)
+'''
+1. Apply mask in entire image first before crop?
+2. flat images that are saturated
+'''
 
-print('-----------------------')
+print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
-centroid_left = (620,720) #o-ray
-centroid_right = (900,720) #e-ray
-box_size = 150
 
-image = pf.open(pol[0])[0].data
-o = utils.get_crop(image, centroid_left, box_size)
-e = utils.get_crop(image, centroid_right, box_size)
+crop.extract_oe(obj, box_size, show_oe_image=False, save_fits=False, check_if_saturated=True, cmap='gray')
+
+# def ask_again():
+#     begin_step2 = str(input("Press:\n[y] to continue\n[n]to stop\n"))
+#     if begin_step2 == 'y':
+#         pass
+#     elif begin_step2 == 'n':
+#         sys.exit()
+#     else:
+#         print('Improper input!\n')
+#         ask_again()
+
+print('\n-----------------------')
+print(' Subtracting background ')
+print('-----------------------\n')
+remove_bg.rm_bg(obj, box_size, show_before_after=True, save_fits=False, cmap='gray')
 
 #mean, median, std = sigma_clipped_stats(test_image, sigma=3.0, iters=5)
-vmin,vmax= np.median(o), 10*np.median(o)
+#vmin,vmax= np.median(o), 10*np.median(o)
 
-'''fig, axs = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
-axs[0].imshow(o-np.median(o), vmin=vmin, vmax=vmax)
-axs[0].set_title('vertically polarized')
-axs[1].imshow(e-np.median(e), vmin=vmin, vmax=vmax)
-axs[1].set_title('horizontally polarized')
-fig.suptitle(pf.open(pol[0])[0].header['OBJECT'])
-fig.subplots_adjust(top=1.4)
-plt.show()'''
+if False:
+    fig, axs = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
+    axs[0].imshow(o-np.median(o), vmin=vmin, vmax=vmax)
+    axs[0].set_title('vertically polarized')
+    axs[1].imshow(e-np.median(e), vmin=vmin, vmax=vmax)
+    axs[1].set_title('horizontally polarized')
+    fig.suptitle(pf.open(pol[0])[0].header['OBJECT'])
+    fig.subplots_adjust(top=1.4)
+    plt.show()
 
 ###check psf
 #fwhm,constant=40,3000
-print('Checking psf...\n')
-#mean_psf, centers = utils.check_psf(pol,centroid_left,skip_every=5)
-#print(mean_psf,centers)
-print('Plotting psf...\n')
-#popt, pcov= utils.fit_psf(pol,mean_psf, centers)
+if show_psf == True:
+    print('Checking psf...\n')
+    '''
+    skip_every does not make sense to be input from terminal
+    '''
+    mean_psf, centers = utils.check_psf(pol,centroid_left,skip_every=5)
+    #print(mean_psf,centers)
+    print('Plotting psf...\n')
+    popt, pcov= utils.fit_psf(pol,mean_psf, centers)
 
-print('-----------------------')
+print('\n-----------------------')
+print(' Flat field Division ')
+print('-----------------------\n')
+
+
+
+print('\n-----------------------')
+print(' Distortion Correction ')
+print('-----------------------\n')
+
+
+print('\n-----------------------')
 print('        Stacking ')
 print('-----------------------\n')
 
 
 
-print('-----------------------')
+print('\n-----------------------')
 print('         DONE')
 print('-----------------------\n')
-
-'''## Data Reduction Pipeline
-* inspecting raw data
-* making dark frame
-* making cal-flat frame
-* masking bad pixels
-* making sky-flat frame
-* subtracting flat-field
-* subtracting sky frame
-* interpolating for bad pixel
-* measuring position offset
-* shifting and combining images (image registration)
-* analyzing standard star
-* estimating limiting magnitude'''

@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
+import argparse
+from ircs import utils
+from matplotlib import pyplot as plt
+import numpy as np
+import os
+
+input_dir = '/mnt/sda1/data/ircs_pol'
+ircs_pix_size = 20.57*1e-3
+
+parser = argparse.ArgumentParser(description=
+	"Show raw images", usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('--skip_every', help='skip every n-th frame per band', type=int, default=None)
+parser.add_argument('--cmap', help='choose colormap', type=str, choices=('jet','gray'), default=None)
+args = parser.parse_args()
+skip_every = args.skip_every
+cmap=args.cmap
+
+#initialize
+print('-----------------------')
+print('Checking raw data frames')
+print('-----------------------\n')
+
+#if textfiles exists: read: on, off, obj = read_files()
+if os.listdir(input_dir) != []:
+    try:
+        obj=np.loadtxt(input_dir+'/object.txt', dtype=str, delimiter=',')
+        flat_off=np.loadtxt(input_dir+'/flat_off.txt', dtype=str, delimiter=',')
+        flat_on=np.loadtxt(input_dir+'/flat_on.txt', dtype=str, delimiter=',')
+        others=np.loadtxt(input_dir+'/others.txt', dtype=str, delimiter=',')
+        # import pdb; pdb.set_trace()
+    except:
+        print('Missing text files!\n')
+
+else:
+    obj, flat_on, flat_off, others = utils.image_sorter(input_dir,save_list=True)
+
+if skip_every is not None:
+    print('Note:\nDither number is {} (recommended value for `skip_every`).\n'.format(pf.open(obj[0])[0].header['I_DTHNUM']))
+    print('\nSkipping every {}-th raw frame\n'.format(skip_every))
+
+else: #if None
+    skip_every=1
+    print('\nShowing all raw frames...\n')
+
+
+if cmap is None:
+    cmap=None
+
+elif cmap == 'gray':
+    cmap='gray'
+
+else: #if None
+    cmap='jet'
+
+obj_name = pf.open(obj[0])[0].header['OBJECT']
+print('\nShowing {} ...\n'.format(obj_name))
+
+# turn on interactive mode, non-blocking `show`
+dither_step=pf.open(obj[0])[0].header['I_DTHSZ']
+print('dither step={0} = {1} pix\n'.format(dither_step, dither_step/ircs_pix_size))
+
+plt.ion()
+# import pdb; pdb.set_trace()
+for idx,i in enumerate(obj[::skip_every]):
+    obj_image = pf.open(obj[idx])[0].data
+    vmin, vmax = np.median(obj_image), 10*np.median(obj_image)
+
+    fig,ax = plt.subplots(nrows=1,ncols=1, figsize=(8,8))
+    ax1 = plt.imshow(obj_image,cmap=cmap,vmin=vmin,vmax=vmax)
+    ax.set_title(pf.open(obj[idx])[0].header['OBJECT'])
+    ax.set_xlabel(obj[idx].split("/")[-1])
+    fig.colorbar(ax1, ax=ax)
+    plt.show()
+    print(pf.open(obj[idx])[0].header['I_DTHPOS'])
+    _ = raw_input("Press [enter] to continue...")
+    plt.close()
+
+print('\n-----------------------')
+print('         DONE')
+print('-----------------------\n')

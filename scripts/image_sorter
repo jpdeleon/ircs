@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+from glob import glob
+import os
+import numpy as np
+try:
+    from astropy.io import fits as pf
+except:
+    import pyfits as pf
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+input_dir = '/mnt/sda1/data/ircs_pol'
+#output_dir = '/home/Jerome/ircs_pol_output'
+
+if not os.path.exists(input_dir):
+    os.makedirs(input_dir)
+
+#main
+image_sorter(input_dir, save_list=True)
+
+print('\n-----------------------')
+print('         DONE')
+print('-----------------------\n')

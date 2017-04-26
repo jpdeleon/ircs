@@ -41,7 +41,8 @@ setup(
     long_description=rd("README.md") + "\n\n"
                     + "---------\n\n",
     package_dir={"ircs": "ircs"},
-    scripts=['scripts/ircs-imaging', 'scripts/ircs-polarimetry', 'scripts/ircs-analysis'],
+
+    scripts=['scripts/ircs-imaging', 'scripts/ircs-polarimetry', 'scripts/ircs-analysis', 'scripts/show_raw_image', 'scripts/image_sorter'],
     include_package_data=True,
     keywords=['IRCS','linear polarimetry','near-infrared'],
     classifiers = [
@@ -50,5 +51,5 @@ setup(
         'Topic :: Scientific/Engineering',
         'Programming Language :: Python'
         ],
-    install_requires = ['numpy', 'matplotlib', 'astropy', 'photutils', 'tqdm'],
+    install_requires = ['numpy', 'matplotlib', 'astropy', 'scipy', 'photutils', 'pandas', 'tqdm','scikit-image'],
 )

@@ -15,8 +15,9 @@ from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
 
-input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-output_dir = '/home/jpdl/ircs_pol_output'
+#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol'
+output_dir = '/home/Jerome/ircs_pol_output'
 
 ## Data Reduction Pipeline
 def check_header(fname):
@@ -172,6 +173,9 @@ def get_centroid(image):
     '''
     centroid = com(image)
     return centroid
+
+def get_median():
+    return
 
 def make_dark():
     return
