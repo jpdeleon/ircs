@@ -14,7 +14,8 @@ from tqdm import tqdm
 
 from ircs import utils
 
-input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 crop_output_dir = input_dir+'/cropped/'
 
 if not os.path.exists(crop_output_dir):
@@ -56,7 +57,7 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
         hdr_l = pf.open(i)[0].header
         hdr_r = pf.open(i)[0].header #np.copy(hdr_l)
         '''
-        bug: add in fits header:
+        bug: add comment in fits header
         comment = 'estimated centroid'
         '''
         if dither_position == '1':
@@ -103,14 +104,20 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
             '''
             #circular mask centered at centroid/ star
             #mask for image_e is the same
-            peak_flux_o = utils.get_peak_flux(image_o[dither], header_o[dither], box_size, r=3)
-            if  peak_flux_o > 4000:
-                print('\nFLAG:\n{} is saturated (peak count > 4000 ADU)!\n'.format(i))
-                saturated_o.append(i)
+            try:
+                peak_flux_o, bg_o = utils.get_peak_flux(image_o[dither], header_o[dither], box_size, r=3)
+                if  peak_flux_o > 4000:
+                    print('\nFLAG:\n{} is saturated (peak count > 4000 ADU)!\n'.format(i))
+                    saturated_o.append(i)
+            except:
+                print('ERROR encountered in {}'.format(header_o[dither]['FRAMEID']))
+            try:
+                peak_flux_e, bg_e = utils.get_peak_flux(image_e[dither], header_e[dither], box_size, r=3)
+                if  peak_flux_e > 4000:
+                    print('\nFLAG:\n{} is saturated (peak count > 4000 ADU)!\n'.format(i))
+                    saturated_e.append(i)
+            except:
+                print('ERROR encountered in {}'.format(header_e[dither]['FRAMEID']))
 
-            peak_flux_e = utils.get_peak_flux(image_e[dither], header_e[dither], box_size, r=3)
-            if  peak_flux_e > 4000:
-                print('\nFLAG:\n{} is saturated (peak count > 4000 ADU)!\n'.format(i))
-                saturated_e.append(i)
     print('\nTotal number of saturated frames:\n{}'.format(len(saturated_o)))
     #return None

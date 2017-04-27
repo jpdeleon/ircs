@@ -8,7 +8,8 @@ from ircs import utils
 from matplotlib import pyplot as plt
 import numpy as np
 
-input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 ircs_pix_size = 20.57*1e-3
 
 parser = argparse.ArgumentParser(description=

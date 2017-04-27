@@ -13,7 +13,7 @@ Description: # IRCS
         ## Progress
         2017/03/20: basic scripting
         2017/04/24: created setup.py
-        
+        2017/04/26: added crop and bgsub
         ## Installation
         This assumes that you have an environment with at least python 2.7 installed.
         If not, use conda to create an environment called `ircs_pol`:

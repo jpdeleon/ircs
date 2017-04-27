@@ -9,12 +9,12 @@ from matplotlib import pyplot as plt
 import numpy as np
 import os
 
-input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 ircs_pix_size = 20.57*1e-3
 
 parser = argparse.ArgumentParser(description=
 	"Show raw images", usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
-
 parser.add_argument('--skip_every', help='skip every n-th frame per band', type=int, default=None)
 parser.add_argument('--cmap', help='choose colormap', type=str, choices=('jet','gray'), default=None)
 args = parser.parse_args()

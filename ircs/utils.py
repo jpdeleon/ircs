@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from glob import glob
 import os
+import shutil
+import sys
 import numpy as np
 try:
     from astropy.io import fits as pf
@@ -15,7 +17,7 @@ from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
 
-#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 output_dir = '/home/Jerome/ircs_pol_output'
 
 ircs_pix_size = 20.57*1e-3
@@ -23,7 +25,19 @@ strip_width = 4.4
 separation = strip_width/ircs_pix_size
 ## Data Reduction Pipeline
 
+def proceed():
+    # raw_input returns the empty string for "enter"
+    yes = set(['yes','y', 'ye', ''])
+    no = set(['no','n'])
 
+    choice = raw_input('Proceed to next step? [yes/no]\n').lower()
+    if choice in yes:
+       return True
+    elif choice in no:
+       return False
+    else:
+       sys.stdout.write("Please respond with 'yes' or 'no'.\n")
+       proceed()
 
 def check_header(fname):
     '''
@@ -33,12 +47,17 @@ def check_header(fname):
     print(sample_hdr)
     return sample_hdr
 
-def image_sorter(input_dir, save_list):
+def image_sorter(input_dir, save_list=True):
+    '''
+    sort images inside input_dir based on header['OBJECT']
+    input_dir can be changed if needed
+    '''
     file_list = glob(os.path.join(input_dir,'*.fits'))
     file_list.sort()
 
     if os.listdir(input_dir) != []:
         print('total no. of raw data frames: {0}\n'.format(len(file_list)))
+    summary = []
     obj=[]
     obj_type=[]
     flat=[]
@@ -46,9 +65,12 @@ def image_sorter(input_dir, save_list):
     flat_off=[]
     flat_on=[]
     others=[]
-
+    #parameters to extract from header
+    params = 'FRAMEID, DATA-TYP, OBJECT, EXP1TIME, COADD, D_MODE, I_SCALE, I_DTHNUM, I_DTHPOS'
     for i in tqdm(file_list):
         hdr=pf.open(i)[0].header
+        #get each params in header
+        summary.append([hdr[j] for j in params.split(',')])
         if hdr['DATA-TYP'] ==  'OBJECT':
             obj.append(i)
             obj_type.append(hdr['OBJECT'])
@@ -63,19 +85,35 @@ def image_sorter(input_dir, save_list):
                 flat_off.append(i)
             else:
                 flat_on.append(i)
-        else:
+        else: #hdr['DATA-TYP'] ==  'DARK'?
             others.append(i)
-    print('\nTypes of object:\n{}\n'.format(set(obj_type)))
-    print('Types of flat:\n{}\n'.format(set(flat_type)))
+
+    print('\nOBJECT:\n{}\n'.format(set(obj_type)))
+
+    if len(set(obj_type))>1:
+        print('\n=====================WARNING=====================\n')
+        print('\n{0} objects found in\n{1}'.format(len(set(obj_type)), input_dir))
+        print('It is a MUST to have only ONE object per directory\n')
+        print('\nMOVE the other OBJECT in a separate directory and run this again')
+        print('\nSee summary.txt\n')
+        print('\n=====================WARNING=====================\n')
+        #EXITING
+        sys.exit()
+    #import pdb; pdb.set_trace()
+
+    print('Types of FLAT:\n{}\n'.format(set(flat_type)))
     #save into text file
     if save_list == True:
+        np.savetxt(input_dir+'/summary.txt', summary, header=params, fmt="%s", delimiter=',')
+        np.savetxt(input_dir+'/object_types.txt', list(set(obj_type)), fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/object.txt', obj, fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/flat_off.txt', flat_off, fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/flat_on.txt', flat_on, fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/others.txt', others, fmt="%s", delimiter=',')
-        print('OBJECT and FLAT list saved in {}'.format(input_dir))
-    return obj, flat_on, flat_off, others
+        print('OBJECT and FLAT lists saved in {}\n'.format(input_dir))
+        print('\nSee also summary.txt\n')
 
+    return obj, flat_on, flat_off, others
 
 def test_image(pol, unpol, on, off):
 
@@ -105,6 +143,10 @@ def test_image(pol, unpol, on, off):
     plt.show()
 
 def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
+    '''
+    Due to remove_bg, the np.median(image) produces higher bkg_o
+    than original raw image 
+    '''
     box_size = 150
     if cmap is None:
         cmap=None
@@ -130,15 +172,15 @@ def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
     ax1 = ax[0].imshow(pol_image,cmap=cmap,vmin=vmin1,vmax=vmax1)
     #ax[0].set_title(header_o['OBJECT'])
     ax[0].set_title('vertically polarized')
-    peak_flux_o = get_peak_flux(pol_image, header_o, box_size, r=3)
-    ax[0].set_xlabel('peak flux/NDR/coadd\n={}'.format(peak_flux_o))
+    peak_flux_o, bkg_o = get_peak_flux(pol_image, header_o, box_size, r=3)
+    ax[0].set_xlabel('peak flux/NDR/coadd\n={0}\nbackground={1}\n'.format(peak_flux_o, bkg_o))
     fig.colorbar(ax1, ax=ax[0])
 
     ax2 = ax[1].imshow(unpol_image,cmap=cmap,vmin=vmin2,vmax=vmax2)
     #ax[1].set_title(header_e['OBJECT'])
     ax[1].set_title('horizontally polarized')
-    peak_flux_e = get_peak_flux(unpol_image, header_e, box_size, r=3)
-    ax[1].set_xlabel('peak flux/NDR/coadd\n={}'.format(peak_flux_e))
+    peak_flux_e, bkg_e = get_peak_flux(unpol_image, header_e, box_size, r=3)
+    ax[1].set_xlabel('peak flux/NDR/coadd\n={0}\nbackground={1}\n'.format(peak_flux_e, bkg_e))
     fig.colorbar(ax2, ax=ax[1])
     plt.suptitle('{0}, {1}'.format(header_o['OBJECT'], header_e['FRAMEID']))
     plt.show()
@@ -165,9 +207,13 @@ def get_peak_flux(image, header, box_size, r):
     # slice_mask = (x > x_min) * (x < x_max) * (y > y_min) * (y < y_max)
     # data_slice = data[y_min:y_max, x_min:x_max]
     center_mask = image[mask]
-    peak_flux = np.median(center_mask) #star flux
+    with np.errstate(invalid='ignore'):
+        peak_flux = np.median(center_mask) #star flux
+        background = np.median(image)
     peak_flux_adjusted = peak_flux/header['NDR']/header['COADD']
-    return peak_flux_adjusted
+    background_adjusted = background/header['NDR']/header['COADD']
+    #print(peak_flux_adjusted)
+    return peak_flux_adjusted, background_adjusted
 
 def get_crop(image, centroid, box_size):
     x, y = centroid
