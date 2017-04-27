@@ -20,9 +20,10 @@ from ircs import flat
 #import utils
 #from utils import inspect_data
 
-#input_dir = '/mnt/sda1/data/ircs_pol'
-input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 output_dir = '/home/Jerome/ircs_pol_output'
+
 message="Basic IRCS Data Reduction Pipeline:\n* inspecting raw data\n* making dark frame\n* making cal-flat frame\n* masking bad pixels\n* making sky-flat frame\n* subtracting flat-field\n* subtracting sky frame\n* interpolating for bad pixel\n* measuring position offset\n* shifting and combining images (image registration)\n* analyzing standard star\n* estimating limiting magnitude\n\nNOTE:\nBefore running this script, run first 'image_sorter'\n"
 parser = argparse.ArgumentParser(description=message, usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
 
@@ -81,7 +82,7 @@ print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
 
-crop.extract_oe(obj, box_size, show_oe_image=True, save_fits=True, check_if_saturated=True, cmap='gray')
+crop.extract_oe(obj, box_size, show_oe_image=False, save_fits=True, check_if_saturated=True, cmap='gray')
 
 if utils.proceed():
     pass
@@ -95,7 +96,7 @@ else:
 print('\n-----------------------')
 print(' Subtracting background ')
 print('-----------------------\n')
-remove_bg.rm_bg(obj, box_size, show_before_after=True, save_fits=False, cmap='gray')
+remove_bg.rm_bg(obj, box_size, show_before_after=False, save_fits=False, cmap='gray')
 
 if utils.proceed():
     pass
@@ -121,7 +122,7 @@ print('\n-----------------------')
 print(' Flat field Division ')
 print('-----------------------\n')
 
-flat.calflat(flat_on, flat_off, check_frames=True,show_image=True, save_fits=True)
+flat.calflat(flat_on, flat_off, check_frames=False,show_image=True, save_fits=True, cmap='gray')
 
 if utils.proceed():
     pass

@@ -16,7 +16,8 @@ from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
 
-input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 output_dir = '/home/Jerome/ircs_pol_output'
 
 ircs_pix_size = 20.57*1e-3
@@ -25,7 +26,9 @@ separation = strip_width/ircs_pix_size
 ## Data Reduction Pipeline
 
 def proceed():
-    # raw_input returns the empty string for "enter"
+    '''
+    prompts the user to continue or stop in between steps in data reduction
+    '''
     yes = set(['yes','y', 'ye', ''])
     no = set(['no','n'])
 
@@ -40,6 +43,7 @@ def proceed():
 
 def check_header(fname):
     '''
+    simple header printer in terminal
     similar to: from astropy.io.fits import getheader
     '''
     sample_hdr = pf.open(input_dir+'/'+fname)[0].header
@@ -89,6 +93,9 @@ def image_sorter(input_dir, save_list=True):
 
     print('\nOBJECT:\n{}\n'.format(set(obj_type)))
 
+    #save header summary by default
+    np.savetxt(input_dir+'/summary.txt', summary, header=params, fmt="%s", delimiter=',')
+
     if len(set(obj_type))>1:
         print('\n=====================WARNING=====================\n')
         print('\n{0} objects found in\n{1}'.format(len(set(obj_type)), input_dir))
@@ -103,7 +110,6 @@ def image_sorter(input_dir, save_list=True):
     print('Types of FLAT:\n{}\n'.format(set(flat_type)))
     #save into text file
     if save_list == True:
-        np.savetxt(input_dir+'/summary.txt', summary, header=params, fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/object_types.txt', list(set(obj_type)), fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/object.txt', obj, fmt="%s", delimiter=',')
         np.savetxt(input_dir+'/flat_off.txt', flat_off, fmt="%s", delimiter=',')
@@ -115,6 +121,9 @@ def image_sorter(input_dir, save_list=True):
     return obj, flat_on, flat_off, others
 
 def check_frame(lst, calc, show_image, cmap):
+    '''
+    calculates difference or dividend between two consecutive frames and displays it
+    '''
     for idx, i in tqdm(enumerate(lst[:-2])):
         hdr1 = pf.open(i)[0].header
         img1 = pf.open(i)[0].data
@@ -139,13 +148,21 @@ def check_frame(lst, calc, show_image, cmap):
                 plt.colorbar()
             print('\nbackground levels:\n{0}: {1}\n{2}: {3}\n'.format(hdr1['FRAMEID'], bkg_1, hdr2['FRAMEID'], bkg_2))
         plt.show()
-        try:
-            _ = input("Press [enter] to continue...")
-        except:
-            _ = raw_input("Press [enter] to continue...")
+        if sys.version_info>(2,7,14): #check if newer than python 2.7.13
+            response = input("Press [enter] to continue; [q] to quit display...")
+        else: #use python 2
+            response = raw_input("Press [enter] to continue; [q] to quit display...")
+
+        if response.lower in ['q', 'quit', 'qu', 'exit']:
+            break # quit display
+
         plt.close()
 
 def test_image(pol, unpol, on, off):
+    '''
+    displays two images side-by-side;
+    currently useless
+    '''
 
     pol_image = pf.open(pol[0])[0].data
     unpol_image = pf.open(unpol[0])[0].data
@@ -174,6 +191,8 @@ def test_image(pol, unpol, on, off):
 
 def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
     '''
+    compares o- and e-ray and displays them side-by-side
+
     Due to remove_bg, the np.median(image) produces higher bkg_o
     than original raw image
     '''
@@ -220,13 +239,26 @@ def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
     raw_input works but might not work for python 3!
     results to twice ENTER to proceed
     '''
-    try:
-        _ = input("Press [enter] to continue...")
-    except:
-        _ = raw_input("Press [enter] to continue...")
+    #try/except still allows both to run
+    if sys.version_info>(2,7,14): #check if newer than python 2.7.13
+        response = input("Press [enter] to continue...")
+    else: #use python 2
+        response = raw_input("Press [enter] to continue...")
+
+    # if response == '':
+    #     pass
+    # elif response.lower() in ['q','quit','exit']:
+    #     return False #quit
     plt.close()
 
 def get_peak_flux(image, header, box_size, r):
+    '''try:
+            _ = input("Press [enter] to continue...")
+        except:
+            _ = raw_input("Press [enter] to continue...")
+    calculates the flux within a small annulus centered at the star
+    also calculates the median background
+    '''
     a, b = image.shape
     n = box_size
     y,x = np.ogrid[-a/2.0:n-a/2.0, -b/2.0:n-b/2.0]
@@ -246,13 +278,23 @@ def get_peak_flux(image, header, box_size, r):
     return peak_flux_adjusted, background_adjusted
 
 def get_crop(image, centroid, box_size):
+    '''
+    simple cropping tool
+    '''
     x, y = centroid
     image_crop = np.copy(image[int(y-(box_size/2)):int(y+(box_size/2)),int(x-(box_size/2)):int(x+(box_size/2))])
     return image_crop
-    
+
 def gauss(x, *params):
     A, mu, sigma, eps= params
     return A*np.exp(-(x-mu)**2/(2.*sigma**2)) + eps
+
+def get_centroid(image):
+    '''
+    Calculate the centroid of a 2D array as its 'center of mass' determined from image moments.
+    '''
+    centroid = com(image)
+    return centroid
 
 def get_sources(image, fwhm, constant):
     daofind = DAOStarFinder(fwhm=fwhm, threshold=10*np.std(image))
@@ -339,16 +381,6 @@ def fit_psf(pol,mean_psf, centers):
     plt.show()
     print('A: {}\nmu: {}\nsigma= {}\neps: {}'.format(*popt)) #popt[0],popt[1], popt[2], popt[3]
     return popt, pcov
-
-def get_centroid(image):
-    '''
-    Calculate the centroid of a 2D array as its 'center of mass' determined from image moments.
-    '''
-    centroid = com(image)
-    return centroid
-
-def get_median():
-    return
 
 def make_dark():
     return

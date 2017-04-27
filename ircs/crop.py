@@ -14,9 +14,13 @@ from tqdm import tqdm
 
 from ircs import utils
 
-#input_dir = '/mnt/sda1/data/ircs_pol'
-input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol'
+#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
+'''
+Don't forget the slash / in the end of input_dir!
+'''
 crop_output_dir = input_dir+'/cropped/'
+#os.path.join(input_dir,'cropped') did not work properly
 
 if not os.path.exists(crop_output_dir):
     os.makedirs(crop_output_dir)
@@ -91,7 +95,14 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
         header_o[dither] = hdr_l
         header_e[dither] = hdr_r
         if show_oe_image == True:
-            utils.compare_oe(image_o[dither], image_e[dither], header_o[dither], header_e[dither], cmap)
+            '''
+            loops all images and display them; 'status' is for exiting the display mode
+            however, q is entered, images will not be saved, so it is advised to edited
+            show_image=False just to skip showing image
+            '''
+            status=utils.compare_oe(image_o[dither], image_e[dither], header_o[dither], header_e[dither], cmap)
+            if status == False:
+                return # acts like 'break' to exit displaying all images
         if save_fits == True:
             try:
                 pf.writeto(crop_output_dir+header_o[dither]['FRAMEID']+'_o.fits', image_o[dither], header_o[dither])
