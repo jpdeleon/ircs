@@ -95,9 +95,12 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
         if save_fits == True:
             try:
                 pf.writeto(crop_output_dir+header_o[dither]['FRAMEID']+'_o.fits', image_o[dither], header_o[dither])
+            except:
+                print('{}_o.fits already exists!'.format(header_o[dither]['FRAMEID']))
+            try:
                 pf.writeto(crop_output_dir+header_e[dither]['FRAMEID']+'_e.fits', image_e[dither], header_e[dither])
             except:
-                print('{}.fits already exists!'.format(header_o[dither]['FRAMEID']))
+                print('{}_e.fits already exists!'.format(header_o[dither]['FRAMEID']))
         if check_if_saturated == True:
             '''
             create a mask in the center (within star) and get its median

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from glob import glob
 import os
-import shutil
 import sys
 import numpy as np
 try:
@@ -115,6 +114,37 @@ def image_sorter(input_dir, save_list=True):
 
     return obj, flat_on, flat_off, others
 
+def check_frame(lst, calc, show_image, cmap):
+    for idx, i in tqdm(enumerate(lst[:-2])):
+        hdr1 = pf.open(i)[0].header
+        img1 = pf.open(i)[0].data
+        hdr2 = pf.open(lst[idx+1])[0].header
+        img2 = pf.open(lst[idx+1])[0].data
+        bkg_1 = np.median(img1)/hdr1['NDR']/hdr1['COADD']
+        bkg_2 = np.median(img1)/hdr2['NDR']/hdr2['COADD']
+        plt.ion()
+        if calc == 'divide':
+            if show_image == True:
+                plt.imshow(img1 / img2, cmap=cmap)
+                plt.title('{0} / {1}'.format(hdr1['FRAMEID'], hdr2['FRAMEID']))
+                plt.xlabel('({0}) ; ({1})'.format(hdr1['I_DTHPOS'], hdr2['I_DTHPOS']))
+                plt.colorbar()
+            print('\nbackground levels:\n{0}: {1}\n{2}: {3}\n'.format(hdr1['FRAMEID'], bkg_1, hdr2['FRAMEID'], bkg_2))
+
+        else: # calc == 'subtract':
+            if show_image == True:
+                plt.imshow(img1 - img2, cmap=cmap)
+                plt.title('{0} - {1}'.format(hdr1['FRAMEID'], hdr2['FRAMEID']))
+                plt.xlabel('{0} : {1}'.format(hdr1['I_DTHPOS'], hdr2['I_DTHPOS']))
+                plt.colorbar()
+            print('\nbackground levels:\n{0}: {1}\n{2}: {3}\n'.format(hdr1['FRAMEID'], bkg_1, hdr2['FRAMEID'], bkg_2))
+        plt.show()
+        try:
+            _ = input("Press [enter] to continue...")
+        except:
+            _ = raw_input("Press [enter] to continue...")
+        plt.close()
+
 def test_image(pol, unpol, on, off):
 
     pol_image = pf.open(pol[0])[0].data
@@ -143,6 +173,10 @@ def test_image(pol, unpol, on, off):
     plt.show()
 
 def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
+    '''
+    Due to remove_bg, the np.median(image) produces higher bkg_o
+    than original raw image
+    '''
     box_size = 150
     if cmap is None:
         cmap=None
@@ -215,7 +249,7 @@ def get_crop(image, centroid, box_size):
     x, y = centroid
     image_crop = np.copy(image[int(y-(box_size/2)):int(y+(box_size/2)),int(x-(box_size/2)):int(x+(box_size/2))])
     return image_crop
-
+    
 def gauss(x, *params):
     A, mu, sigma, eps= params
     return A*np.exp(-(x-mu)**2/(2.*sigma**2)) + eps

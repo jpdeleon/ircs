@@ -15,6 +15,7 @@ import argparse
 from ircs import utils
 from ircs import crop
 from ircs import remove_bg
+from ircs import flat
 
 #import utils
 #from utils import inspect_data
@@ -56,13 +57,16 @@ if os.listdir(input_dir) != []:
         obj=np.loadtxt(input_dir+'/object.txt', dtype=str, delimiter=',')
         flat_off=np.loadtxt(input_dir+'/flat_off.txt', dtype=str, delimiter=',')
         flat_on=np.loadtxt(input_dir+'/flat_on.txt', dtype=str, delimiter=',')
-        others=np.loadtxt(input_dir+'/others.txt', dtype=str, delimiter=',')
+        #others=np.loadtxt(input_dir+'/others.txt', dtype=str, delimiter=',')
     except:
         print('Missing text files!\n')
 
+# if False:
+#     utils.check_frame(obj, calc='subtract', show_image=True, cmap='jet')
+
 '''
 1. Apply mask in entire image first before crop?
-2. flat images that are saturated
+2. flag images that are saturated
 '''
 
 if utils.proceed():
@@ -93,33 +97,39 @@ print(' Subtracting background ')
 print('-----------------------\n')
 remove_bg.rm_bg(obj, box_size, show_before_after=True, save_fits=False, cmap='gray')
 
-if False:
-    fig, axs = plt.subplots(nrows=1,ncols=2, figsize=(10,5))
-    axs[0].imshow(o-np.median(o), vmin=vmin, vmax=vmax)
-    axs[0].set_title('vertically polarized')
-    axs[1].imshow(e-np.median(e), vmin=vmin, vmax=vmax)
-    axs[1].set_title('horizontally polarized')
-    fig.suptitle(pf.open(pol[0])[0].header['OBJECT'])
-    fig.subplots_adjust(top=1.4)
-    plt.show()
+if utils.proceed():
+    pass
+else:
+    print('\n-----------------------')
+    print('        TEMINATED ')
+    print('-----------------------\n')
+    sys.exit()
 
 ###check psf
 #fwhm,constant=40,3000
-if show_psf == True:
-    print('Checking psf...\n')
-    '''
-    skip_every does not make sense to be input from terminal
-    '''
-    mean_psf, centers = utils.check_psf(pol,centroid_left,skip_every=5)
-    #print(mean_psf,centers)
-    print('Plotting psf...\n')
-    popt, pcov= utils.fit_psf(pol,mean_psf, centers)
+# if show_psf == True:
+#     print('Checking psf...\n')
+#     '''
+#     skip_every does not make sense to be input from terminal
+#     '''
+#     mean_psf, centers = utils.check_psf(pol,centroid_left,skip_every=5)
+#     #print(mean_psf,centers)
+#     print('Plotting psf...\n')
+#     popt, pcov= utils.fit_psf(pol,mean_psf, centers)
 
 print('\n-----------------------')
 print(' Flat field Division ')
 print('-----------------------\n')
 
+flat.calflat(flat_on, flat_off, check_frames=True,show_image=True, save_fits=True)
 
+if utils.proceed():
+    pass
+else:
+    print('\n-----------------------')
+    print('        TEMINATED ')
+    print('-----------------------\n')
+    sys.exit()
 
 print('\n-----------------------')
 print(' Distortion Correction ')
