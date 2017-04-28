@@ -158,6 +158,9 @@ def check_frame(lst, calc, show_image, cmap):
 
         plt.close()
 
+def show_hist(image, bins):
+    n, bins, patches = plt.hist(image.ravel(), bins=256, alpha=0.75)
+
 def test_image(pol, unpol, on, off):
     '''
     displays two images side-by-side;

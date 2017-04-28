@@ -1,7 +1,8 @@
 setup.py
 ircs/__init__.py
 ircs/crop.py
-ircs/flat.py
+ircs/make_bpmask.py
+ircs/make_flat.py
 ircs/remove_bg.py
 ircs/utils.py
 ircs_pol.egg-info/PKG-INFO
