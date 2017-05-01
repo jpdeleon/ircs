@@ -14,6 +14,8 @@ Description: # IRCS
         2017/03/20: basic scripting
         2017/04/24: created setup.py
         2017/04/26: added crop and bgsub
+        2017/04/28: added calflat.py
+        
         ## Installation
         This assumes that you have an environment with at least python 2.7 installed.
         If not, use conda to create an environment called `ircs_pol`:
@@ -21,27 +23,31 @@ Description: # IRCS
         conda create -n ircs_pol python-2.7 matplotlib numpy
         source activate ircs_pol
         
+        
         Now, clone and then install `ircs`  inside the environment:
-        ```
+        
         1. Clone this repository
         ```shell
         git clone git@github.com:jpdeleon/ircs.git
-        ```
+        
         
         2. `cd` into the proper directory and install
         ```shell
         cd /ircs
         python setup.py install
-        ```
+        
         
         ## Sample run
         
         ### Part 1 ircs-imaging
+        ```shell
+        $ ircs-imaging -h
         
-        * e.g. $ ircs-imaging -h
         
         ### Part 2 ircs-polarimetry
-        * e.g. $ ircs-polarimetry -h
+        ```shell
+        $ ircs-polarimetry -h
+        
         
         See also other plotting helper functions in /ircs/utils.py.
         

@@ -14,12 +14,13 @@ from tqdm import tqdm
 
 from ircs import utils
 
-input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/home/jp/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 '''
 Don't forget the slash / in the end of input_dir!
 '''
-crop_output_dir = input_dir+'/cropped/'
+crop_output_dir = os.path.join(input_dir,'cropped')
 #os.path.join(input_dir,'cropped') did not work properly
 
 if not os.path.exists(crop_output_dir):
@@ -105,11 +106,11 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
                 return # acts like 'break' to exit displaying all images
         if save_fits == True:
             try:
-                pf.writeto(crop_output_dir+header_o[dither]['FRAMEID']+'_o.fits', image_o[dither], header_o[dither])
+                pf.writeto(os.path.join(crop_output_dir,header_o[dither]['FRAMEID'],'_o.fits'), image_o[dither], header_o[dither])
             except:
                 print('{}_o.fits already exists!'.format(header_o[dither]['FRAMEID']))
             try:
-                pf.writeto(crop_output_dir+header_e[dither]['FRAMEID']+'_e.fits', image_e[dither], header_e[dither])
+                pf.writeto(os.path.join(crop_output_dir,header_e[dither]['FRAMEID'],'_e.fits'), image_e[dither], header_e[dither])
             except:
                 print('{}_e.fits already exists!'.format(header_o[dither]['FRAMEID']))
         if check_if_saturated == True:

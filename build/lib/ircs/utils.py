@@ -16,7 +16,8 @@ from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
 
-input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/home/jp/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 output_dir = '/home/Jerome/ircs_pol_output'
 
@@ -46,7 +47,7 @@ def check_header(fname):
     simple header printer in terminal
     similar to: from astropy.io.fits import getheader
     '''
-    sample_hdr = pf.open(input_dir+'/'+fname)[0].header
+    sample_hdr = pf.open(os.path.join(input_dir,fname))[0].header
     print(sample_hdr)
     return sample_hdr
 
@@ -94,7 +95,7 @@ def image_sorter(input_dir, save_list=True):
     print('\nOBJECT:\n{}\n'.format(set(obj_type)))
 
     #save header summary by default
-    np.savetxt(input_dir+'/summary.txt', summary, header=params, fmt="%s", delimiter=',')
+    np.savetxt(os.path.join(input_dir,'summary.txt'), summary, header=params, fmt="%s", delimiter=',')
 
     if len(set(obj_type))>1:
         print('\n=====================WARNING=====================\n')
@@ -110,11 +111,11 @@ def image_sorter(input_dir, save_list=True):
     print('Types of FLAT:\n{}\n'.format(set(flat_type)))
     #save into text file
     if save_list == True:
-        np.savetxt(input_dir+'/object_types.txt', list(set(obj_type)), fmt="%s", delimiter=',')
-        np.savetxt(input_dir+'/object.txt', obj, fmt="%s", delimiter=',')
-        np.savetxt(input_dir+'/flat_off.txt', flat_off, fmt="%s", delimiter=',')
-        np.savetxt(input_dir+'/flat_on.txt', flat_on, fmt="%s", delimiter=',')
-        np.savetxt(input_dir+'/others.txt', others, fmt="%s", delimiter=',')
+        np.savetxt(os.path.join(input_dir,'object_types.txt'), list(set(obj_type)), fmt="%s", delimiter=',')
+        np.savetxt(os.path.join(input_dir,'object.txt'), obj, fmt="%s", delimiter=',')
+        np.savetxt(os.path.join(input_dir,'flat_off.txt'), flat_off, fmt="%s", delimiter=',')
+        np.savetxt(os.path.join(input_dir,'flat_on.txt'), flat_on, fmt="%s", delimiter=',')
+        np.savetxt(os.path.join(input_dir,'others.txt'), others, fmt="%s", delimiter=',')
         print('OBJECT and FLAT lists saved in {}\n'.format(input_dir))
         print('\nSee also summary.txt\n')
 
