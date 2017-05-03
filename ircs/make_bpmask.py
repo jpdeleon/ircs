@@ -15,8 +15,8 @@ from tqdm import tqdm
 
 from ircs import utils
 
-input_dir = '/home/jp/data/ircs_pol'
-#input_dir = '/mnt/sda1/data/ircs_pol/'
+#input_dir = '/home/jp/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol/'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol/'
 
 def bp_mask(img, high, low, show_image, save_fits, cmap):

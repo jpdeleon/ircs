@@ -20,8 +20,8 @@ from tqdm import tqdm
 
 from ircs import utils
 
-input_dir = '/home/jp/data/ircs_pol'
-#input_dir = '/mnt/sda1/data/ircs_pol/'
+#input_dir = '/home/jp/data/ircs_pol'
+input_dir = '/mnt/sda1/data/ircs_pol/'
 output_dir = os.path.join(input_dir,'flat')
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol/'
 
@@ -191,7 +191,7 @@ def flat_div(obj, flat_name, mask, show_image, save_fits, cmap):
         flattened_img= pf.open(i)[0].data
         hdr = pf.open(i)[0].header
         flattened_img /= flat
-        
+
         try:
             '''
             bug: ENTER causes every succeeding image to not show but save
