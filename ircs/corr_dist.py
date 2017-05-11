@@ -34,15 +34,15 @@ from ircs import utils
 
 #input_dir = '/home/jp/data/ircs_pol'
 input_dir = '/mnt/sda1/data/ircs_pol'
+flat_dir = os.path.join(input_dir,'flat')
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 
 dbs_file = 'ircs+ao188_20mas_distmap_20131118.dbs'
 
 def distmap(obj):
-
     for i in obj:
         fname_out=pf.open(obj[0])[0].header['FRAMEID']
-        fname_out=filename1[:-5]+'g.fits'
+        fname_out=os.path.join(flat_dir,i[:-5]+'g.fits')
         iraf.geotran(i,fname_out,database=dbs_file)#,transfor='ch1_2014Jan.dat')
 
 # procedure distcor(inlist, outlist, database)

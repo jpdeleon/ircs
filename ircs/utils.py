@@ -254,6 +254,17 @@ def compare_oe(pol_image, unpol_image, header_o, header_e, cmap):
     # elif response.lower() in ['q','quit','exit']:
     #     return False #quit
     plt.close()
+    #return response
+
+def check_saturation(image,header,box_size):
+    try:
+        peak_flux, bg = get_peak_flux(image, header, box_size, r=3)
+        if  peak_flux > 4000:
+            print('\nFLAG:\n{} is saturated (peak count > 4000 ADU)!\n'.format(header['FRAMEID']))
+            return header['FRAMEID']
+    except:
+        print('ERROR encountered in {}'.format(header['FRAMEID']))
+
 
 def get_peak_flux(image, header, box_size, r):
     '''try:

@@ -6,3 +6,4 @@ photutils
 pandas
 tqdm
 scikit-image
+pyraf

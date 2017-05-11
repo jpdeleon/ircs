@@ -12,7 +12,7 @@ except:
 from tqdm import tqdm
 import argparse
 
-from ircs import utils, crop, remove_bg, make_flat, make_bpmask
+from ircs import utils, crop, remove_bg, make_flat, make_bpmask, make_QU
 
 #input_dir = '/home/jp/data/ircs_pol'
 input_dir = '/mnt/sda1/data/ircs_pol'
@@ -127,7 +127,7 @@ print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
 
-#crop.extract_oe(obj, box_size, show_oe_image=False, save_fits=True, check_if_saturated=True, cmap='gray')
+image_o, image_e, header_o, header_e=crop.extract_oe(obj, box_size, show_oe_image=False, save_fits=False, check_if_saturated=True, cmap='gray')
 
 if utils.proceed():
     pass
@@ -142,6 +142,19 @@ print('\n-----------------------')
 print(' Subtracting background ')
 print('-----------------------\n')
 #remove_bg.rm_bg(obj, box_size, show_before_after=False, save_fits=False, cmap='gray')
+
+if utils.proceed():
+    pass
+else:
+    print('\n-----------------------')
+    print('        TEMINATED ')
+    print('-----------------------\n')
+    sys.exit()
+
+print('\n-----------------------')
+print(' Creating Q and U images')
+print('-----------------------\n')
+make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
 
 if utils.proceed():
     pass

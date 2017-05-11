@@ -17,10 +17,8 @@ from ircs import utils
 #input_dir = '/home/jp/data/ircs_pol'
 input_dir = '/mnt/sda1/data/ircs_pol'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-'''
-Don't forget the slash / in the end of input_dir!
-'''
-crop_output_dir = os.path.join(input_dir,'cropped')
+
+crop_output_dir = os.path.join(input_dir,'oe')
 #os.path.join(input_dir,'cropped') did not work properly
 
 if not os.path.exists(crop_output_dir):
@@ -102,6 +100,7 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
             show_image=False just to skip showing image
             '''
             status=utils.compare_oe(image_o[dither], image_e[dither], header_o[dither], header_e[dither], cmap)
+
             if status == False:
                 return # acts like 'break' to exit displaying all images
         if save_fits == True:
@@ -134,5 +133,8 @@ def extract_oe(obj, box_size, show_oe_image, save_fits, check_if_saturated, cmap
             except:
                 print('ERROR encountered in {}'.format(header_e[dither]['FRAMEID']))
 
+        # if show_QU == True:
+        #     make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray'image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
+
     print('\nTotal number of saturated frames:\n{}'.format(len(saturated_o)))
-    #return None
+    return image_o, image_e, header_o, header_e
