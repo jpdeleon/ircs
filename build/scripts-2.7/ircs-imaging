@@ -1,4 +1,4 @@
-#!/home/jp/miniconda2/envs/ircs_pol/bin/python
+#!/home/Jerome/miniconda3/envs/ircs_pol/bin/python
 
 from glob import glob
 import os
@@ -43,7 +43,10 @@ print('-----------------------')
 print('Checking raw data frames')
 print('-----------------------\n')
 
-home_dir, data_dir, output_dir = utils.check_config()
+config = utils.check_config()
+home_dir = config[0]
+data_dir = config[1]
+output_dir = config[2]
 
 #if textfiles exists: read: on, off, obj = read_files()
 if os.listdir(data_dir) != []:
@@ -125,7 +128,7 @@ print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
 
-image_o, image_e, header_o, header_e=crop2.extract_oe(obj, show_oe_image=False, save_fits=False, check_if_saturated=True, cmap='gray')
+image_o, image_e, header_o, header_e=crop2.extract_oe(obj, show_oe_image=True, save_fits=False, check_if_saturated=False, cmap='gray')
 
 if utils.proceed():
     pass

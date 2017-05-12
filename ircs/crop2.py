@@ -14,14 +14,12 @@ from tqdm import tqdm
 
 from ircs import utils
 
-input_dir = '/home/jp/data/ircs_pol'
-#input_dir = '/mnt/sda1/data/ircs_pol'
-#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-'''
-Don't forget the slash / in the end of input_dir!
-'''
-crop_output_dir = os.path.join(input_dir,'cropped')
-#os.path.join(input_dir,'cropped') did not work properly
+#unpack
+config = utils.check_config()
+home_dir = config[0]
+input_dir = config[1]
+output_dir = config[2]
+crop_output_dir = config[3]
 
 if not os.path.exists(crop_output_dir):
     os.makedirs(crop_output_dir)
@@ -33,16 +31,16 @@ separation = strip_width/ircs_pix_size
 
 
 #these should be edited from config file
-# centroid_dither_1_left = (620,520)
-# centroid_dither_1_right = (880,520)
-# centroid_dither_2_left = (620,230)
-# centroid_dither_2_right = (880,230)
-# centroid_dither_3_left = (620,380)
-# centroid_dither_3_right = (880,380)
-# centroid_dither_4_left = (620,670)
-# centroid_dither_4_right = (880,670)
-# centroid_dither_5_left = (620,820)
-# centroid_dither_5_right = (880,820)
+centroid_dither_1_left = (620,520)
+centroid_dither_1_right = (880,520)
+centroid_dither_2_left = (620,230)
+centroid_dither_2_right = (880,230)
+centroid_dither_3_left = (620,380)
+centroid_dither_3_right = (880,380)
+centroid_dither_4_left = (620,670)
+centroid_dither_4_right = (880,670)
+centroid_dither_5_left = (620,820)
+centroid_dither_5_right = (880,820)
 
 xleft = (512,768)
 yleft = (1,1024)
@@ -61,8 +59,8 @@ def extract_oe(obj, show_oe_image, save_fits, check_if_saturated, cmap):
     dither_step=pf.open(obj[0])[0].header['I_DTHSZ']
     dither_step_in_pix = int(dither_step/ircs_pix_size)
     for i in obj:
-        #dither = pf.open(i)[0].header['I_DTHPOS']
-        #dither_position = dither.split(':')[0].strip()
+        dither = pf.open(i)[0].header['I_DTHPOS']
+        dither_position = dither.split(':')[0].strip()
         hdr_l = pf.open(i)[0].header
         hdr_r = pf.open(i)[0].header #np.copy(hdr_l)
         '''
@@ -70,24 +68,42 @@ def extract_oe(obj, show_oe_image, save_fits, check_if_saturated, cmap):
         comment = 'estimated centroid'
         '''
         image = np.copy(pf.open(i)[0].data)
-        image_crop_l = image[xleft[0]:xleft[1],yleft[0]:yleft[1]]
-        image_crop_r = image[xright[0]:xright[1], yright[0]:yright[1]]
-        import pdb; pdb.set_trace()
-        
-        hdr_l['centroid'] = str(centroid_dither_5_left)
-        hdr_r['centroid'] = str(centroid_dither_5_right)
+        #cropp: 4."4 x 21"
+        image_crop_l = image[yleft[0]:yleft[1],xleft[0]:xleft[1]]
+        image_crop_r = image[yright[0]:yright[1],xright[0]:xright[1]]
+
         image_o[dither] = image_crop_l
         image_e[dither] = image_crop_r
         #header_e and header_e have different estimated centroid at least
         header_o[dither] = hdr_l
         header_e[dither] = hdr_r
+
+        if dither_position == '1':
+            hdr_l['centroid'] = str(centroid_dither_1_left) #comment
+            hdr_r['centroid'] = str(centroid_dither_1_right)
+        elif dither_position == '2':
+            hdr_l['centroid'] = str(centroid_dither_2_left)
+            hdr_r['centroid'] = str(centroid_dither_2_right)
+        elif dither_position == '3':
+            hdr_l['centroid'] = str(centroid_dither_3_left)
+            hdr_r['centroid'] = str(centroid_dither_3_right)
+        elif dither_position == '4':
+            hdr_l['centroid'] = str(centroid_dither_4_left)
+            hdr_r['centroid'] = str(centroid_dither_4_right)
+        else: #dither_position == '5':
+            hdr_l['centroid'] = str(centroid_dither_5_left)
+            hdr_r['centroid'] = str(centroid_dither_5_right)
+
         if show_oe_image == True:
             '''
             loops all images and display them; 'status' is for exiting the display mode
             however, q is entered, images will not be saved, so it is advised to edited
             show_image=False just to skip showing image
             '''
+            import pdb; pdb.set_trace()
             status=utils.compare_oe(image_o[dither], image_e[dither], header_o[dither], header_e[dither], cmap)
+
+
             if status == False:
                 return # acts like 'break' to exit displaying all images
         if save_fits == True:

@@ -14,7 +14,13 @@ from tqdm import tqdm
 
 from ircs import utils
 
-home_dir, input_dir, output_dir = utils.check_config()
+
+config = utils.check_config()
+home_dir = config[0]
+input_dir = config[1]
+output_dir = config[2]
+crop_output_dir = config[3]
+
 #input_dir = '/mnt/sda1/data/ircs_pol'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 

@@ -20,13 +20,13 @@ from tqdm import tqdm
 
 from ircs import utils
 
-home_dir, input_dir, output_dir = utils.check_config()
-#input_dir = '/mnt/sda1/data/ircs_pol/'
-output_dir = os.path.join(input_dir,'flat')
-#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol/'
+config = utils.check_config()
+home_dir = config[0]
+input_dir = config[1]
+flat_output_dir = config[4]
 
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+if not os.path.exists(flat_output_dir):
+    os.makedirs(flat_output_dir)
 
 
 def calflat(on, off, check_frames, show_image, save_fits, cmap):
@@ -224,8 +224,8 @@ def flat_div(obj, flat_name, mask, show_image, save_fits, cmap):
             try:
                 #add header!
                 fname=hdr['FRAMEID']+'_f.fits'
-                pf.writeto(os.path.join(output_dir,fname), flattened_img)
-                print('\n{0} saved in {1}\n'.format(fname, output_dir))
+                pf.writeto(os.path.join(flat_output_dir,fname), flattened_img)
+                print('\n{0} saved in {1}\n'.format(fname, flat_output_dir))
 
             except:
                 print('{} already exists!'.format(hdr['FRAMEID']))
