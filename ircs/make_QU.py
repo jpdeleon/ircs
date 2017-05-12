@@ -11,10 +11,10 @@ except:
 from tqdm import tqdm
 
 from glob import glob
-#from ircs import utils
+from ircs import utils
 
-#input_dir = '/home/jp/data/ircs_pol'
-input_dir = '/mnt/sda1/data/ircs_pol'
+home_dir, input_dir, output_dir = utils.check_config()
+#input_dir = '/mnt/sda1/data/ircs_pol'
 oe_dir = os.path.join(input_dir,'oe')
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
 
@@ -88,7 +88,7 @@ def QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray'):
             else: #use python 2
                 response = raw_input("Press [enter] to continue...")
             plt.close()
-            
+
 
         if save_fits == True:
             try:

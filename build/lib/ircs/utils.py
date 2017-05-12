@@ -15,16 +15,29 @@ from photutils import CircularAperture
 from photutils import DAOStarFinder
 from astropy.stats import sigma_clipped_stats
 import pandas as pd
+import getpass
 
-#input_dir = '/home/jp/data/ircs_pol'
-input_dir = '/mnt/sda1/data/ircs_pol'
+input_dir = '/home/jp/data/ircs_pol'
+#input_dir = '/mnt/sda1/data/ircs_pol'
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-output_dir = '/home/Jerome/ircs_pol_output'
+output_dir = '/home/jp/ircs_pol_output'
 
 ircs_pix_size = 20.57*1e-3
 strip_width = 4.4
 separation = strip_width/ircs_pix_size
 ## Data Reduction Pipeline
+
+def check_config():
+    path=os.path.join('/home',getpass.getuser(),'github/ircs_pol/ircs')
+    config=np.loadtxt(os.path.join(path,'config.txt'),dtype=str, comments='#')
+    for i in config:
+        if i[0] == 'home_dir':
+            home_dir = os.path.join('/home',getpass.getuser(),i[-1])
+        elif i[0] == 'data_dir':
+            data_dir = os.path.join('/home',getpass.getuser(),i[-1])
+        elif i[0] == 'output_dir':
+            output_dir = os.path.join('/home',getpass.getuser(),i[-1])
+    return home_dir, data_dir, output_dir
 
 def proceed():
     '''

@@ -20,8 +20,8 @@ from tqdm import tqdm
 
 from ircs import utils
 
-#input_dir = '/home/jp/data/ircs_pol'
-input_dir = '/mnt/sda1/data/ircs_pol/'
+home_dir, input_dir, output_dir = utils.check_config()
+#input_dir = '/mnt/sda1/data/ircs_pol/'
 output_dir = os.path.join(input_dir,'flat')
 #input_dir = '/mnt/B838B30438B2C124/data/ircs_pol/'
 

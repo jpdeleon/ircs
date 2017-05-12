@@ -2,6 +2,7 @@ setup.py
 ircs/__init__.py
 ircs/corr_dist.py
 ircs/crop.py
+ircs/crop2.py
 ircs/make_QU.py
 ircs/make_bpmask.py
 ircs/make_flat.py

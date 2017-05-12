@@ -1,10 +1,11 @@
-#!/home/Jerome/miniconda2/envs/ircs_pol/bin/python
+#!/home/jp/miniconda2/envs/ircs_pol/bin/python
 
 from glob import glob
 import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+
 try:
     from astropy.io import fits as pf
 except:
@@ -12,12 +13,7 @@ except:
 from tqdm import tqdm
 import argparse
 
-from ircs import utils, crop, remove_bg, make_flat, make_bpmask, make_QU
-
-#input_dir = '/home/jp/data/ircs_pol'
-input_dir = '/mnt/sda1/data/ircs_pol'
-#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-output_dir = '/home/Jerome/ircs_pol_output'
+from ircs import utils, crop, crop2, remove_bg, make_flat, make_bpmask, make_QU
 
 message="Basic IRCS Data Reduction Pipeline:\n* inspecting raw data\n* making dark frame\n* making cal-flat frame\n* masking bad pixels\n* making sky-flat frame\n* subtracting flat-field\n* subtracting sky frame\n* interpolating for bad pixel\n* measuring position offset\n* shifting and combining images (image registration)\n* analyzing standard star\n* estimating limiting magnitude\n\nNOTE:\nBefore running this script, run first 'image_sorter'\n"
 parser = argparse.ArgumentParser(description=message, usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
@@ -47,13 +43,15 @@ print('-----------------------')
 print('Checking raw data frames')
 print('-----------------------\n')
 
+home_dir, data_dir, output_dir = utils.check_config()
+
 #if textfiles exists: read: on, off, obj = read_files()
-if os.listdir(input_dir) != []:
+if os.listdir(data_dir) != []:
     try:
-        obj=np.loadtxt(os.path.join(input_dir,'object.txt'), dtype=str, delimiter=',')
-        flat_off=np.loadtxt(os.path.join(input_dir,'flat_off.txt'), dtype=str, delimiter=',')
-        flat_on=np.loadtxt(os.path.join(input_dir,'flat_on.txt'), dtype=str, delimiter=',')
-        #others=np.loadtxt(os.path.join(input_dir,'others.txt'), dtype=str, delimiter=',')
+        obj=np.loadtxt(os.path.join(data_dir,'object.txt'), dtype=str, delimiter=',')
+        flat_off=np.loadtxt(os.path.join(data_dir,'flat_off.txt'), dtype=str, delimiter=',')
+        flat_on=np.loadtxt(os.path.join(data_dir,'flat_on.txt'), dtype=str, delimiter=',')
+        #others=np.loadtxt(os.path.join(data_dir,'others.txt'), dtype=str, delimiter=',')
     except:
         print('Missing text files!\n')
 
@@ -127,7 +125,7 @@ print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
 
-image_o, image_e, header_o, header_e=crop.extract_oe(obj, box_size, show_oe_image=False, save_fits=False, check_if_saturated=True, cmap='gray')
+image_o, image_e, header_o, header_e=crop2.extract_oe(obj, show_oe_image=False, save_fits=False, check_if_saturated=True, cmap='gray')
 
 if utils.proceed():
     pass
@@ -154,7 +152,7 @@ else:
 print('\n-----------------------')
 print(' Creating Q and U images')
 print('-----------------------\n')
-make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
+#make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
 
 if utils.proceed():
     pass

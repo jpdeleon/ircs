@@ -1,0 +1,7 @@
+#ircs config file
+#
+home_dir = github/ircs_pol
+data_dir = data/ircs_pol
+#input_dir = mnt/sda1/data/ircs_pol
+#input_dir = /mnt/B838B30438B2C124/data/ircs_pol'
+output_dir = ircs_pol_output
