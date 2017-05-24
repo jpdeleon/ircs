@@ -19,7 +19,7 @@ config = utils.check_config()
 home_dir = config[0]
 input_dir = config[1]
 output_dir = config[2]
-crop_output_dir = config[3]
+crop_output_dir = config[4]
 
 if not os.path.exists(crop_output_dir):
     os.makedirs(crop_output_dir)
@@ -63,6 +63,7 @@ def extract_oe(obj, show_oe_image, save_fits, check_if_saturated, cmap):
         dither_position = dither.split(':')[0].strip()
         hdr_l = pf.open(i)[0].header
         hdr_r = pf.open(i)[0].header #np.copy(hdr_l)
+        import pdb; pdb.set_trace()
         '''
         bug: add comment in fits header
         comment = 'estimated centroid'
@@ -100,7 +101,6 @@ def extract_oe(obj, show_oe_image, save_fits, check_if_saturated, cmap):
             however, q is entered, images will not be saved, so it is advised to edited
             show_image=False just to skip showing image
             '''
-            import pdb; pdb.set_trace()
             status=utils.compare_oe(image_o[dither], image_e[dither], header_o[dither], header_e[dither], cmap)
 
 
@@ -108,11 +108,11 @@ def extract_oe(obj, show_oe_image, save_fits, check_if_saturated, cmap):
                 return # acts like 'break' to exit displaying all images
         if save_fits == True:
             try:
-                pf.writeto(os.path.join(crop_output_dir,header_o[dither]['FRAMEID'],'_o.fits'), image_o[dither], header_o[dither])
+                pf.writeto(os.path.join(crop_output_dir,header_o[dither]['FRAMEID']+'_o.fits'), image_o[dither], header_o[dither])
             except:
                 print('{}_o.fits already exists!'.format(header_o[dither]['FRAMEID']))
             try:
-                pf.writeto(os.path.join(crop_output_dir,header_e[dither]['FRAMEID'],'_e.fits'), image_e[dither], header_e[dither])
+                pf.writeto(os.path.join(crop_output_dir,header_e[dither]['FRAMEID']+'_e.fits'), image_e[dither], header_e[dither])
             except:
                 print('{}_e.fits already exists!'.format(header_o[dither]['FRAMEID']))
         if check_if_saturated == True:

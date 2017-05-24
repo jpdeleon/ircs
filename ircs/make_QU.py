@@ -16,7 +16,7 @@ from ircs import utils
 config = utils.check_config()
 home_dir = config[0]
 input_dir = config[1]
-oe_dir = config[5]
+oe_dir = config[6]
 
 file_list_o = glob(os.path.join(oe_dir,'*_o.fits'))
 file_list_e = glob(os.path.join(oe_dir,'*_e.fits'))

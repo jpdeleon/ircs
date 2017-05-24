@@ -13,7 +13,7 @@ except:
 from tqdm import tqdm
 import argparse
 
-from ircs import utils, crop, crop2, remove_bg, make_flat, make_bpmask, make_QU
+from ircs import utils, crop, crop2, remove_bg, make_flat, corr_dist, make_bpmask, make_QU
 
 message="Basic IRCS Data Reduction Pipeline:\n* inspecting raw data\n* making dark frame\n* making cal-flat frame\n* masking bad pixels\n* making sky-flat frame\n* subtracting flat-field\n* subtracting sky frame\n* interpolating for bad pixel\n* measuring position offset\n* shifting and combining images (image registration)\n* analyzing standard star\n* estimating limiting magnitude\n\nNOTE:\nBefore running this script, run first 'image_sorter'\n"
 parser = argparse.ArgumentParser(description=message, usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
@@ -64,6 +64,7 @@ CHECK FOR SATURATED FRAMES
 # if False:
 #     utils.check_frame(obj, calc='subtract', show_image=True, cmap='jet')
 
+
 print('\n-----------------------')
 print(' Creating Flat ')
 print('-----------------------\n')
@@ -112,8 +113,7 @@ divide the product of the COADDS, NDR and EXPTIME
 print('\n-----------------------')
 print(' Distortion Correction ')
 print('-----------------------\n')
-
-
+#corr_dist.distmap(obj)
 
 if utils.proceed():
     pass
@@ -128,7 +128,7 @@ print('\n-----------------------')
 print('Cropping raw data')
 print('-----------------------\n')
 
-image_o, image_e, header_o, header_e=crop2.extract_oe(obj, show_oe_image=True, save_fits=False, check_if_saturated=False, cmap='gray')
+image_o, image_e, header_o, header_e=crop2.extract_oe(obj, show_oe_image=False, save_fits=True, check_if_saturated=False, cmap='gray')
 
 if utils.proceed():
     pass
@@ -155,7 +155,8 @@ else:
 print('\n-----------------------')
 print(' Creating Q and U images')
 print('-----------------------\n')
-#make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
+import pdb; pdb.set_trace()
+make_QU.QU(image_o, image_e, show_QU=True, save_fits=False, cmap='gray')
 
 if utils.proceed():
     pass
@@ -176,9 +177,6 @@ else:
 #     #print(mean_psf,centers)
 #     print('Plotting psf...\n')
 #     popt, pcov= utils.fit_psf(pol,mean_psf, centers)
-
-
-
 
 
 print('\n-----------------------')

@@ -33,12 +33,16 @@ def check_config():
         elif i[0] == 'output_dir':
             output_dir = os.path.join('/home',getpass.getuser(),i[-1])
         elif i[0] == 'crop_output_dir':
-            crop_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
+            crop_output_dir = os.path.join(home_dir,i[-1])
         elif i[0] == 'flat_output_dir':
-            flat_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
+            flat_output_dir = os.path.join(data_dir,i[-1])
         elif i[0] == 'oe_output_dir':
-            oe_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-    return (home_dir, data_dir, output_dir, crop_output_dir, flat_output_dir, oe_output_dir)
+            oe_output_dir = os.path.join(data_dir,i[-1])
+        elif i[0] == 'distcorr_dir':
+            distcorr_dir = os.path.join(data_dir,i[-1])
+        elif i[0] == 'db_filename':
+            db_file = os.path.join(data_dir,i[-1])
+    return (home_dir, data_dir, output_dir, distcorr_dir, crop_output_dir, flat_output_dir, oe_output_dir, db_file)
 
 def proceed():
     '''

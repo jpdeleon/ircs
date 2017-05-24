@@ -23,7 +23,7 @@ from ircs import utils
 config = utils.check_config()
 home_dir = config[0]
 input_dir = config[1]
-flat_output_dir = config[4]
+flat_output_dir = config[5]
 
 if not os.path.exists(flat_output_dir):
     os.makedirs(flat_output_dir)

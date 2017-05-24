@@ -23,6 +23,7 @@ step.
 from glob import glob
 import os
 import numpy as np
+#from pyraf import iraf
 
 try:
     from astropy.io import fits as pf
@@ -35,15 +36,25 @@ from ircs import utils
 config = utils.check_config()
 home_dir = config[0]
 input_dir = config[1]
-flat_dir = config[4]
+distcorr_dir = config[3]
 
-dbs_file = 'ircs+ao188_20mas_distmap_20131118.dbs'
+#iraf.task(distcor = os.path.join(home_dir,'distcor.cl'))
+
+config = utils.check_config()
+db_file=config[7]
+#dbs_file = 'ircsAO188_20mas_distmap_20131118.dbs'
 
 def distmap(obj):
     for i in obj:
+        '''
+        bug: no choice but to save output
+        '''
         fname_out=pf.open(obj[0])[0].header['FRAMEID']
         fname_out=os.path.join(flat_dir,i[:-5]+'g.fits')
-        iraf.geotran(i,fname_out,database=dbs_file)#,transfor='ch1_2014Jan.dat')
+        import pdb; pdb.set_trace()
+        iraf.geotran(i,fname_out,database=db_file)
+        #iraf.geotran(fnamein,fnameout,database='ch4_2014Jan.db',transfor='ch4_2014Jan.dat')
+
 
 # procedure distcor(inlist, outlist, database)
 # 	  file inlist   {prompt='List of flat corrected images with @mark'}
