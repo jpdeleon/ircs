@@ -9,26 +9,28 @@ except:
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 import argparse
-
+import getpass
 from ircs import utils
 
-input_dir = '/home/jp/data/ircs_pol'
-#input_dir = '/mnt/sda1/data/ircs_pol'
-#input_dir = '/mnt/B838B30438B2C124/data/ircs_pol'
-#output_dir = '/home/Jerome/ircs_pol_output'
+config = utils.check_config()
+data_dir = config[1]
 
-
-parser = argparse.ArgumentParser(description='Sorts the .fits files into proper directories based on their header', usage='use "%(prog)s --help" for more information', formatter_class=argparse.RawTextHelpFormatter)
-parser.add_argument('--save_list', help='outputs text file of list per category', type=bool, default=True)
+parser = argparse.ArgumentParser(description=
+    'Sorts the .fits files into proper directories based on their header',
+    usage='use "%(prog)s --help" for more information',
+    formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('--save_list',
+                help='outputs text file of list per category',
+                type=bool, default=True)
 args = parser.parse_args()
 save_list = args.save_list
 
-if not os.path.exists(input_dir):
+if not os.path.exists(data_dir):
     os.makedirs(input_dir)
-    print('Created: {}'.format(input_dir))
+    print('Created: {}'.format(data_dir))
 
 #main
-utils.image_sorter(input_dir, save_list)
+utils.image_sorter(data_dir, save_list)
 
 print('\n-----------------------')
 print('         DONE')

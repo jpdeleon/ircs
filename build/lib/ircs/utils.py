@@ -38,7 +38,8 @@ def check_config():
             flat_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
         elif i[0] == 'oe_output_dir':
             oe_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-    return (home_dir, data_dir, output_dir, crop_output_dir, flat_output_dir, oe_output_dir)
+    return (home_dir, data_dir, output_dir, crop_output_dir, flat_output_dir,
+            oe_output_dir)
 
 def proceed():
     '''
@@ -70,7 +71,7 @@ def image_sorter(input_dir, save_list=True):
     sort images inside input_dir based on header['OBJECT']
     input_dir can be changed if needed
     '''
-    file_list = glob(os.path.join(input_dir,'*.fits'))
+    file_list = glob(os.path.join(input_dir,'IRCA*.fits'))
     file_list.sort()
 
     if os.listdir(input_dir) != []:
@@ -84,7 +85,8 @@ def image_sorter(input_dir, save_list=True):
     flat_on=[]
     others=[]
     #parameters to extract from header
-    params = 'FRAMEID, DATA-TYP, OBJECT, EXP1TIME, COADD, D_MODE, I_SCALE, I_DTHNUM, I_DTHPOS'
+    params = 'FRAMEID, DATA-TYP, OBJECT, EXP1TIME, COADD, D_MODE, I_SCALE, \
+                I_DTHNUM, I_DTHPOS'
     for i in tqdm(file_list):
         hdr=pf.open(i)[0].header
         #get each params in header
@@ -95,7 +97,7 @@ def image_sorter(input_dir, save_list=True):
         elif hdr['DATA-TYP'] ==  'FLAT':
             flat.append(i)
             flat_type.append(hdr['OBJECT'])
-            if hdr['OBJECT'].split()[0].split('_')[2] == 'OFF':
+            if 'OFF' in hdr['OBJECT'].split()[0].split('_'):
                 #'IMAGE_Kp_OFF HWP0'
                 #'IMAGE_Kp_OFF HWP22.5'
                 #'IMAGE_Kp_OFF HWP45'

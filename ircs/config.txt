@@ -1,8 +1,28 @@
-#ircs config file
+#ircs_pol configuration file
 #-------------------------------------------------------
-home_dir = github/ircs_pol
-data_dir = data/ircs_pol
+home_dir = github/ircs_UH30B
+data_dir = data/ircs_UH30B/EPIC203824153
 output_dir = ircs_pol_output
-crop_output_dir = os.path.join(home_dir,'cropped')
-flat_output_dir = os.path.join(home_dir,'flat')
-oe_output_dir = os.path.join(home_dir,'oe')
+#-------------------------------------------------------
+#part 1: ircs-imaging
+flatfield_dir = FLAT
+master_flat_dir = flat
+distortion_correction = dist_corr
+crop_output_dir = crop
+
+#-------------------------------------------------------
+#part 2: ircs-polarimetry
+oe_output_dir = oe
+#-------------------------------------------------------
+rmstrp        =
+flat-field    =
+correctpix    =
+pdidivid      =
+pdidistcorr   =
+chcorr        =
+pdidiff       =
+spcorr        =
+pdidift       =
+regist        =
+ipcorr2       =
+combPI        =
