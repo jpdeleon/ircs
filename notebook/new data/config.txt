@@ -1,0 +1,6 @@
+#ircs_pol configuration file
+#-------------------------------------------------------
+home_dir = github/ircs_UH30B
+data_dir = data/ircs_UH30B/EPIC203824153
+output_dir = ircs_pol_output
+#-------------------------------------------------------
