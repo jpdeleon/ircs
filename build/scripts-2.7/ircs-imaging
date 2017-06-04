@@ -1,4 +1,4 @@
-#!/home/Jerome/miniconda3/envs/ircs_pol/bin/python
+#!/home/jp/miniconda2/envs/ircs_pol/bin/python
 
 from glob import glob
 import os
@@ -74,7 +74,7 @@ if os.listdir(data_dir) != []:
             dtype=str, delimiter=',')
         #others=np.loadtxt(os.path.join(data_dir,'others.txt'), dtype=str, delimiter=',')
     except:
-        print('Missing text files!\n')
+        print('Missing text files!\nHave you run image-sorter?\n')
 
 '''
 CHECK FOR SATURATED FRAMES

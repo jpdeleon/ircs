@@ -1,4 +1,6 @@
-build
+build/
 *.egg-info
 *.pyc
 *ipynb_checkpoint
+pyraf/
+*/.ipynb*

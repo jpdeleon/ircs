@@ -31,15 +31,14 @@ def check_config():
         elif i[0] == 'data_dir':
             data_dir = os.path.join('/home',getpass.getuser(),i[-1])
         elif i[0] == 'output_dir':
-            output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-        elif i[0] == 'crop_output_dir':
-            crop_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-        elif i[0] == 'flat_output_dir':
-            flat_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-        elif i[0] == 'oe_output_dir':
-            oe_output_dir = os.path.join('/home',getpass.getuser(),i[-1])
-    return (home_dir, data_dir, output_dir, crop_output_dir, flat_output_dir,
-            oe_output_dir)
+            output_dir = os.path.join(data_dir,i[-1])
+        # elif i[0] == 'crop_output_dir':
+        #     crop_output_dir = os.path.join(data_dir,i[-1])
+        # elif i[0] == 'flat_output_dir':
+        #     flat_output_dir = os.path.join(data_dir,i[-1])
+        # elif i[0] == 'oe_output_dir':
+        #     oe_output_dir = os.path.join(data_dir,i[-1])
+    return home_dir, data_dir, output_dir#, crop_output_dir, flat_output_dir, oe_output_dir
 
 def proceed():
     '''
@@ -108,7 +107,7 @@ def image_sorter(input_dir, save_list=True):
         else: #hdr['DATA-TYP'] ==  'DARK'?
             others.append(i)
 
-    print('\nOBJECT:\n{}\n'.format(set(obj_type)))
+    print('\nOBJECT:\n{}\n'.format(set(obj_type), obj_type))
 
     #save header summary by default
     np.savetxt(os.path.join(input_dir,'summary.txt'), summary, header=params, fmt="%s", delimiter=',')
